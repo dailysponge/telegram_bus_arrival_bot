@@ -1,8 +1,9 @@
 require('dotenv').config();
 const { default: axios } = require('axios');
 const telegram_bot = require('node-telegram-bot-api');
-const token = {YOUR_DISCORD_BOT_TOKEN);
-const LTA = {YOUR_LTA_API_TOKEN};
+const token = process.env.BUS_TOKEN;
+const LTA = process.env.LTA_TOKEN;
+
 async function getBusStop(url,config){
     let res = await axios.get(url,config);
     let data = res.data;
@@ -29,10 +30,10 @@ async function get_response(bus_stop,config){
             }
         }
         var diff1 = Math.abs(new Date() - new Date(next_bus_timing.replace(/-/g,'/'))); //milliseconds
-        diff1 = Math.floor((diff1/1000)/60); //convert to minute
-        subsequent_bus_timing = element.NextBus2.EstimatedArrival.slice(0,-6).split("T").join(" ");
+        diff1 = Math.floor((diff1/1000)/60)-480; //convert to minute (dependent on time zone) 
+        let subsequent_bus_timing = element.NextBus2.EstimatedArrival.slice(0,-6).split("T").join(" ");
         var diff2 = Math.abs(new Date() - new Date(subsequent_bus_timing.replace(/-/g,'/'))); //milliseconds
-        diff2 = Math.floor((diff2/1000)/60); //convert to minute
+        diff2 = Math.floor((diff2/1000)/60)-480; //convert to minute (dependent on time zone)
         
         if(isNaN(diff1)){
             data_list.push(`🚍 ${element.ServiceNo} is not available`)
@@ -40,18 +41,18 @@ async function get_response(bus_stop,config){
         else{
             if(isNaN(diff2)){
                 if(diff1 != 0){
-                    data_list.push(`🚍 *${element.ServiceNo}*: \t ${diff1}min ${next_bus_seating} \t 2nd 🚍 unavailable`)
+                    data_list.push(`🚍 ${element.ServiceNo}: \t ${diff1}min ${next_bus_seating} \t 2nd 🚍 unavailable`)
                 }
                 else{
-                    data_list.push(`🚍 *${element.ServiceNo}*: \t now ${next_bus_seating} \t 2nd 🚍 unavailable`)
+                    data_list.push(`🚍 ${element.ServiceNo}: \t now ${next_bus_seating} \t 2nd 🚍 unavailable`)
                 }
             }
             else{
                 if(diff1!=0){
-                    data_list.push(`🚍 *${element.ServiceNo}*: \t ${diff1}min ${next_bus_seating} \t ${diff2}min ${subsequent_bus_seating}`)
+                    data_list.push(`🚍 ${element.ServiceNo}: \t ${diff1}min ${next_bus_seating} \t ${diff2}min ${subsequent_bus_seating}`)
                 }
                 else{
-                    data_list.push(`🚍 *${element.ServiceNo}*: \t now ${next_bus_seating} \t ${diff2}min ${subsequent_bus_seating}`)
+                    data_list.push(`🚍 ${element.ServiceNo}: \t now ${next_bus_seating} \t ${diff2}min ${subsequent_bus_seating}`)
                 }
             }
         }
@@ -78,7 +79,7 @@ bot.on('message', async (msg)=>{
 
     var bus_stop = msg.text;
     var counter = 0;
-    data_list = await get_response(bus_stop,config);
+    var data_list = await get_response(bus_stop,config);
     if(msg.text!= "/start"){
         if(data_list.length==0){
             bot.sendMessage(chat_id, "Invalid bus stop entered. Try again")
