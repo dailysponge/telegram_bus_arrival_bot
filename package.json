@@ -1,0 +1,27 @@
+{
+  "name": "telegram_bus_arrival_bot",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "A telegram based bot that retrieves API calls from LTA to display queried bus timings based on bus stop number.\r Update timezone accordingly. LTA API dataset uses standard Singapore timezone \r  ![image](https://user-images.githubusercontent.com/72028616/157471563-d590af68-5bd4-4490-89e7-f5d67c0ffae6.png)",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon src/app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dailysponge/telegram_bus_arrival_bot.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dailysponge/telegram_bus_arrival_bot/issues"
+  },
+  "homepage": "https://github.com/dailysponge/telegram_bus_arrival_bot#readme",
+  "dependencies": {
+    "axios": "^1.2.4",
+    "dotenv": "^16.0.3",
+    "node-telegram-bot-api": "^0.61.0",
+    "nodemon": "^2.0.20"
+  }
+}
