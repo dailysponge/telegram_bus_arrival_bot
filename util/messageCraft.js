@@ -14,16 +14,22 @@ export function craftMessage(data) {
       let loadNext = bus.NextBus2.Load ? loadCheck(bus.NextBus2.Load) : "";
       let minuteChecker = timeToArrival === "Now" ? "" : "min";
       let minuteCheckerNext = timeToArrivalNext === "Now" ? "" : "min";
+      let [busNoPadding, arrivalPadding] = generatePaddingLength(
+        bus.ServiceNo,
+        timeToArrival,
+        minuteChecker,
+        false
+      );
+      let [busNoPaddingNext, arrivalPaddingNext] = generatePaddingLength(
+        bus.ServiceNo,
+        timeToArrivalNext,
+        minuteCheckerNext,
+        true
+      );
       message +=
         `🚍 ${bus.ServiceNo}: ` +
-        `   ${timeToArrival} ${minuteChecker} ${" ".padEnd(
-          generatePaddingLength(bus.ServiceNo, timeToArrival),
-          " "
-        )} ${load}` +
-        ` ${timeToArrivalNext} ${minuteCheckerNext} ${" ".padEnd(
-          generatePaddingLength(bus.ServiceNo, timeToArrivalNext),
-          " "
-        )} ${loadNext} \n`;
+        ` ${busNoPadding} ${timeToArrival} ${minuteChecker} ${arrivalPadding} ${load}` +
+        ` ${busNoPaddingNext} ${timeToArrivalNext} ${minuteCheckerNext} ${arrivalPaddingNext} ${loadNext} \n`;
     });
     return message;
   } catch (error) {
@@ -35,7 +41,7 @@ export function craftMessage(data) {
 function parseTimeDifference(time) {
   try {
     if (time === "No bus") {
-      return "";
+      return " Bus timing not available";
     }
     const currentTime = new Date();
     const givenTime = time;
@@ -58,17 +64,31 @@ function parseTimeDifference(time) {
     return error;
   }
 }
+
 function loadCheck(load) {
-  let loadMap = {
-    SEA: "🟢",
-    SDA: "🟠",
-    LSD: "🔴",
-  };
-  return loadMap[load];
+  try {
+    let loadMap = {
+      SEA: "🟢",
+      SDA: "🟠",
+      LSD: "🔴",
+    };
+    return loadMap[load];
+  } catch (error) {
+    console.error(error);
+    return error;
+  }
 }
-function generatePaddingLength(busNumber, timeToArrival) {
-  let minuteCheckerPadLength = timeToArrival === "Now" ? 5 : 0;
-  let paddingLength =
-    2 * (3 - busNumber.length) + 2 * (2 - String(timeToArrival).length) + minuteCheckerPadLength;
-  return paddingLength;
+
+function generatePaddingLength(busNumber, timeToArrival, minChecker, next) {
+  try {
+    let busNoPadding = 2 * (3 - busNumber.length);
+    busNoPadding = next ? "" : "".padEnd(busNoPadding, " ");
+    let arrivalPadding = 2 * (6 - timeToArrival.toString().length - minChecker.length);
+    if (timeToArrival === "Now") arrivalPadding -= 1;
+    arrivalPadding = "".padEnd(arrivalPadding, " ");
+    return [busNoPadding, arrivalPadding];
+  } catch (error) {
+    console.error(error);
+    return error;
+  }
 }
