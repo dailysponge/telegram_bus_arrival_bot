@@ -7,7 +7,7 @@ import { getSavedStopsDetails } from "./util/busStop.js";
 import { getBusList, findBusLocation } from "./util/getBusList.js";
 dotenv.config();
 
-const botToken = process.env.BOT_TOKEN_DEV;
+const botToken = process.env.BOT_TOKEN;
 const bot = new telegram_bot(botToken, { polling: true });
 
 bot.on("message", async (msg) => {
