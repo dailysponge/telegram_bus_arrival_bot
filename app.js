@@ -3,7 +3,7 @@ import telegram_bot from "node-telegram-bot-api";
 import { getBusStop } from "./util/ltaResponse.js";
 import { saveStop } from "./util/saveStop.js";
 import { craftMessage } from "./util/messageCraft.js";
-import { getSavedStopsDetails } from "./util/busStop.js";
+import { getSavedStopsDetails, deleteStop } from "./util/busStop.js";
 import { getBusList, findBusLocation } from "./util/getBusList.js";
 dotenv.config();
 
@@ -38,7 +38,12 @@ bot.on("message", async (msg) => {
             `Bus stop: ${stop.BusStopCode}\nDescription: ${stop.RoadName} near ${stop.Description}`,
             {
               reply_markup: {
-                inline_keyboard: [[{ text: "Select", callback_data: `${stop.BusStopCode}` }]],
+                inline_keyboard: [
+                  [
+                    { text: "Select", callback_data: `${stop.BusStopCode}` },
+                    { text: "Delete", callback_data: `${stop.BusStopCode} delete` },
+                  ],
+                ],
               },
               parse_mode: "Markdown",
             }
@@ -104,6 +109,17 @@ bot.on("callback_query", async (callback_query) => {
       case callback_query.data.includes("save"):
         saveStop(chatId, busStopCode);
         bot.sendMessage(chatId, "Bus stop saved");
+        break;
+
+      // delete bus stop button
+      case callback_query.data.includes("delete"):
+        console.log(callback_query);
+        let success = await deleteStop(chatId, busStopCode);
+        if (!success) {
+          bot.sendMessage(chatId, "Something went wrong, try again later");
+          break;
+        }
+        bot.deleteMessage(chatId, callback_query.message.message_id);
         break;
 
       // update bus stop button
