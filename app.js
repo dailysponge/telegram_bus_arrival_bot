@@ -113,7 +113,6 @@ bot.on("callback_query", async (callback_query) => {
 
       // delete bus stop button
       case callback_query.data.includes("delete"):
-        console.log(callback_query);
         let success = await deleteStop(chatId, busStopCode);
         if (!success) {
           bot.sendMessage(chatId, "Something went wrong, try again later");
@@ -127,6 +126,7 @@ bot.on("callback_query", async (callback_query) => {
         // notifies user that the bus stop has been updated
         bot.answerCallbackQuery(callback_query.id, `Bus stop updated`);
         const message = craftMessage(busStopData);
+        bot.deleteMessage(chatId, callback_query.message.message_id);
         bot.sendMessage(chatId, message, {
           reply_markup: {
             inline_keyboard: [
