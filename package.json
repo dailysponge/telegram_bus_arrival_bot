@@ -23,5 +23,15 @@
     "dotenv": "^16.0.3",
     "node-telegram-bot-api": "^0.61.0",
     "nodemon": "^2.0.20"
+  },
+  "nodemonConfig": {
+    "ignore": [
+      "savedStops.json"
+    ]
+  },
+  "devDependencies": {
+    "json-loader": "^0.5.7",
+    "webpack": "^5.75.0",
+    "webpack-cli": "^5.0.1"
   }
 }

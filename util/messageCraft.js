@@ -13,13 +13,15 @@ export function craftMessage(data) {
       let load = bus.NextBus.Load ? loadCheck(bus.NextBus.Load) : "";
       let loadNext = bus.NextBus2.Load ? loadCheck(bus.NextBus2.Load) : "";
       let minuteChecker = timeToArrival === "Now" ? "" : "min";
-      let minuteCheckerNext = timeToArrivalNext === "Now" ? "" : "min";
+      let minuteCheckerNext =
+        timeToArrivalNext === "Now" || timeToArrivalNext == "Not available" ? "" : "min";
       let [busNoPadding, arrivalPadding] = generatePaddingLength(
         bus.ServiceNo,
         timeToArrival,
         minuteChecker,
         false
       );
+
       let [busNoPaddingNext, arrivalPaddingNext] = generatePaddingLength(
         bus.ServiceNo,
         timeToArrivalNext,
@@ -41,7 +43,7 @@ export function craftMessage(data) {
 function parseTimeDifference(time) {
   try {
     if (time === "No bus") {
-      return " Bus timing not available";
+      return "Not available";
     }
     const currentTime = new Date();
     const givenTime = time;

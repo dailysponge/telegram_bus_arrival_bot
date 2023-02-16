@@ -1,14 +1,15 @@
 export function getBusList(data) {
   try {
     let busList = [];
-    let inline_keyboard_busList = [];
+    let inline_keyboard_busList = [[]];
     for (let i = 0; i < data.Services.length; i++) {
       busList.push(data.Services[i].ServiceNo);
     }
     busList.forEach((bus) => {
-      inline_keyboard_busList.push([
-        { text: `Location of ${bus}`, callback_data: `${data.BusStopCode} ${bus} location` },
-      ]);
+      inline_keyboard_busList[0].push({
+        text: `${bus}`,
+        callback_data: `${data.BusStopCode} ${bus} location`,
+      });
     });
     return inline_keyboard_busList;
   } catch (error) {
