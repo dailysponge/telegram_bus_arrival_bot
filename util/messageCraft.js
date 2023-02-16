@@ -45,7 +45,17 @@ function parseTimeDifference(time) {
     if (time === "No bus") {
       return "Not available";
     }
-    const currentTime = new Date();
+
+    const date = new Date(); // create a new Date object
+
+    const options = {
+      timeZone: "Asia/Singapore", // set the timezone to GMT+8
+      hour12: false, // use 24-hour time format
+    };
+
+    const currentTime = new Date(date.toLocaleString("en-US", options)); // convert the date to Singapore time
+
+    // const currentTime = new Date();
     const givenTime = time;
 
     const currentHour = currentTime.getHours();
