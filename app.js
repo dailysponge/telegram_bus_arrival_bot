@@ -23,6 +23,10 @@ bot.on("message", async (msg) => {
 
       case msg.text === "/savedstops":
         let [[registeredStops, savedStops]] = await getSavedStopsDetails(chatId);
+        if (registeredStops == null || savedStops == null) {
+          bot.sendMessage(chatId, "No saved bus stops, try saving a bus stop first!");
+          break;
+        }
         registeredStops.forEach((stop) => {
           if (savedStops.includes(stop.BusStopCode)) {
             const index = savedStops.indexOf(stop.BusStopCode);

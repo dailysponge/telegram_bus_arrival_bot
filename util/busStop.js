@@ -4,8 +4,10 @@ import fs from "fs";
 export async function getSavedStopsDetails(chatId) {
   try {
     let savedStops = getSavedStops(chatId);
+    if (savedStops === null) return [[null, null]];
+
     let stopsDetails = await getBusStopDetails(savedStops);
-    if (savedStops === null) return null;
+
     return [stopsDetails];
   } catch (error) {
     console.error(error);
