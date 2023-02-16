@@ -1,5 +1,6 @@
 import axios from "axios";
 import dotenv from "dotenv";
+import fs from "fs";
 dotenv.config();
 
 const config = {
@@ -22,12 +23,9 @@ export async function getBusStop(busStopCode) {
 
 export async function getBusStopDetails(savedStops) {
   try {
-    const URL = "http://datamall2.mytransport.sg/ltaodataservice/BusStops";
-    let res = await axios.get(URL, config);
-    let data = res.data;
-    let allBusStops = data.value;
+    let allBusStops = JSON.parse(fs.readFileSync("./allStops.json"));
     let savedStopsDetails = [];
-    allBusStops.forEach((stop) => {
+    allBusStops.stops.forEach((stop) => {
       if (savedStops.includes(stop.BusStopCode)) savedStopsDetails.push(stop);
     });
     return [savedStopsDetails, savedStops];
