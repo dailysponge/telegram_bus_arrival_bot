@@ -2,5 +2,5 @@
 A telegram based bot that retrieves API calls from LTA to display queried bus timings based on bus stop number.
 Update timezone accordingly. LTA API dataset uses standard Singapore timezone 
 
-![photo_6305055112455894898_y](https://user-images.githubusercontent.com/72028616/219591725-0d805b54-1f16-462f-8471-17991f73ecbc.jpg)
-![photo_6305055112455894897_y](https://user-images.githubusercontent.com/72028616/219591728-b0c30880-b74c-4d59-ace4-2fd704413418.jpg)
+![telebot1](https://user-images.githubusercontent.com/72028616/219592216-d252cedd-fb70-44e0-8fe2-86525fd70f10.jpg)
+![telebot](https://user-images.githubusercontent.com/72028616/219592224-8eec8e6b-c4f2-4d23-b81d-99837a91eaa6.jpg)
