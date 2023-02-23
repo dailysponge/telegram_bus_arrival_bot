@@ -5,19 +5,43 @@ import { saveStop } from "./util/saveStop.js";
 import { craftMessage } from "./util/messageCraft.js";
 import { getSavedStopsDetails, deleteStop } from "./util/busStop.js";
 import { getBusList, findBusLocation } from "./util/getBusList.js";
+import { trackUsage, exportUsage } from "./util/analytics.js";
+import moment from "moment-timezone";
+
 dotenv.config();
 
 const botToken = process.env.BOT_TOKEN;
 const bot = new telegram_bot(botToken, { polling: true });
 
+const timezone = "Asia/Singapore";
+const sendStartTime = 22; // 10pm in 24-hour format
+const sendEndTime = 23; // 11pm in 24-hour format
+
+setInterval(async () => {
+  const now = moment().tz(timezone);
+  const currentHour = now.hour();
+  if (currentHour >= sendStartTime && currentHour <= sendEndTime) {
+    let usage = await exportUsage();
+    bot
+      .sendMessage(757257986, `usage till ${moment().tz(timezone).format("YYYY-MM-DD")}:\n${usage}`)
+      .then((sentMessage) => {
+        const messageId = sentMessage.message_id;
+        bot.pinChatMessage(757257986, messageId);
+      });
+  }
+}, 60 * 60 * 1000); // check every hour (in milliseconds)
+
 bot.on("message", async (msg) => {
+  // The message was sent by the bot
+  if (msg.from.is_bot) return;
+
   try {
     const chatId = msg.chat.id;
     switch (true) {
       case msg.text === "/start":
         bot.sendMessage(
           chatId,
-          "Welcome! \nType in bus stop number🚌 to start!\n\n🟢= LOW crowd\n🟠= MODERATE crowd\n🔴= HIGH crowd.\n'SD' = Single Decker\n'DD' = Double Decker  \n\n Click on the bus number buttons for their location\n\nUse /savedStops or the menu button on the left to show all saved bus stops. "
+          "Welcome! \nType in bus stop number (e.g. 04121) to start!\n\n🟢= LOW crowd\n🟠= MODERATE crowd\n🔴= HIGH crowd.\n'SD' = Single Decker\n'DD' = Double Decker  \n\n Click on the bus number buttons for their location\n\nUse /savedStops or the menu button on the left to show all saved bus stops. "
         );
         break;
 
@@ -69,6 +93,7 @@ bot.on("message", async (msg) => {
           break;
         }
         const message = craftMessage(data);
+        trackUsage(msg.chat.username);
         bot.sendMessage(chatId, message, {
           reply_markup: {
             inline_keyboard: [
@@ -126,6 +151,7 @@ bot.on("callback_query", async (callback_query) => {
         // notifies user that the bus stop has been updated
         bot.answerCallbackQuery(callback_query.id, `Bus stop updated`);
         const message = craftMessage(busStopData);
+        trackUsage(callback_query.message.chat.username);
         bot.deleteMessage(chatId, callback_query.message.message_id);
         bot.sendMessage(chatId, message, {
           reply_markup: {

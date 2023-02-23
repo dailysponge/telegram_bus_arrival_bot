@@ -21,12 +21,14 @@
   "dependencies": {
     "axios": "^1.2.4",
     "dotenv": "^16.0.3",
+    "moment-timezone": "^0.5.40",
     "node-telegram-bot-api": "^0.61.0",
     "nodemon": "^2.0.20"
   },
   "nodemonConfig": {
     "ignore": [
-      "savedStops.json"
+      "savedStops.json",
+      "analytics.json"
     ]
   },
   "devDependencies": {
