@@ -17,7 +17,7 @@ bot.on("message", async (msg) => {
       case msg.text === "/start":
         bot.sendMessage(
           chatId,
-          "Welcome! \nType in bus stop number🚌 to start!\n\n🟢= LOW crowd\n🟠= MODERATE crowd\n🔴= HIGH crowd. \n\n Click on the bus number buttons for their location\n\nUse /savedStops or the menu button on the left to show all saved bus stops"
+          "Welcome! \nType in bus stop number🚌 to start!\n\n🟢= LOW crowd\n🟠= MODERATE crowd\n🔴= HIGH crowd.\n'SD' = Single Decker\n'DD' = Double Decker  \n\n Click on the bus number buttons for their location\n\nUse /savedStops or the menu button on the left to show all saved bus stops. "
         );
         break;
 

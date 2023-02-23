@@ -8,13 +8,36 @@ export function craftMessage(data) {
       let busArrivalNext = bus.NextBus2.EstimatedArrival
         ? bus.NextBus2.EstimatedArrival.split("T")[1].split(":").slice(0, 2).join(":")
         : "No bus";
+      let busArrivalNextNext = bus.NextBus3.EstimatedArrival
+        ? bus.NextBus2.EstimatedArrival.split("T")[1].split(":").slice(0, 2).join(":")
+        : "No bus";
+
+      let type = (type) => {
+        switch (type) {
+          case "SD":
+          case "BD":
+            return "(SD)";
+          case "DD":
+            return "(DD)";
+          default:
+            return "";
+        }
+      };
+
       let timeToArrival = parseTimeDifference(busArrival);
       let timeToArrivalNext = parseTimeDifference(busArrivalNext);
+      let timeToArrivalNextNext = parseTimeDifference(busArrivalNextNext);
+
       let load = bus.NextBus.Load ? loadCheck(bus.NextBus.Load) : "";
       let loadNext = bus.NextBus2.Load ? loadCheck(bus.NextBus2.Load) : "";
+      let loadNextNext = bus.NextBus3.Load ? loadCheck(bus.NextBus3.Load) : "";
+
       let minuteChecker = timeToArrival === "Now" ? "" : "min";
       let minuteCheckerNext =
         timeToArrivalNext === "Now" || timeToArrivalNext == "Not available" ? "" : "min";
+      let minuteCheckerNextNext =
+        timeToArrivalNextNext == "Now" || timeToArrivalNextNext == "Not available" ? "" : "min";
+
       let [busNoPadding, arrivalPadding] = generatePaddingLength(
         bus.ServiceNo,
         timeToArrival,
@@ -28,10 +51,25 @@ export function craftMessage(data) {
         minuteCheckerNext,
         true
       );
+
+      let [busNoPaddingNextNext, arrivalPaddingNextNext] = generatePaddingLength(
+        bus.ServiceNo,
+        timeToArrivalNextNext,
+        minuteCheckerNextNext,
+        true
+      );
+
       message +=
         `🚍 ${bus.ServiceNo}: ` +
-        ` ${busNoPadding} ${timeToArrival} ${minuteChecker} ${arrivalPadding} ${load}` +
-        ` ${busNoPaddingNext} ${timeToArrivalNext} ${minuteCheckerNext} ${arrivalPaddingNext} ${loadNext} \n`;
+        ` ${busNoPadding} ${timeToArrival} ${minuteChecker}${
+          timeToArrival !== "Not available" ? type(bus.NextBus.Type) : ""
+        } ${arrivalPadding} ${load}` +
+        ` ${busNoPaddingNext} ${timeToArrivalNext} ${minuteCheckerNext}${
+          timeToArrivalNext !== "Not available" ? type(bus.NextBus2.Type) : ""
+        } ${arrivalPaddingNext} ${loadNext}` +
+        ` ${busNoPaddingNextNext} ${timeToArrivalNextNext} ${minuteCheckerNextNext}${
+          timeToArrivalNextNext !== "Not available" ? type(bus.NextBus3.Type) : ""
+        } ${arrivalPaddingNextNext} ${loadNextNext} \n`;
     });
     return message;
   } catch (error) {
