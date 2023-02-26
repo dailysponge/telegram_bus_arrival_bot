@@ -66,10 +66,11 @@ export function craftMessage(data) {
         } ${arrivalPadding} ${load}` +
         ` ${busNoPaddingNext} ${timeToArrivalNext} ${minuteCheckerNext}${
           timeToArrivalNext !== "Not available" ? type(bus.NextBus2.Type) : ""
-        } ${arrivalPaddingNext} ${loadNext}` +
-        ` ${busNoPaddingNextNext} ${timeToArrivalNextNext} ${minuteCheckerNextNext}${
-          timeToArrivalNextNext !== "Not available" ? type(bus.NextBus3.Type) : ""
-        } ${arrivalPaddingNextNext} ${loadNextNext} \n`;
+        } ${arrivalPaddingNext} ${loadNext}\n`;
+      // +
+      // ` ${busNoPaddingNextNext} ${timeToArrivalNextNext} ${minuteCheckerNextNext}${
+      //   timeToArrivalNextNext !== "Not available" ? type(bus.NextBus3.Type) : ""
+      // } ${arrivalPaddingNextNext} ${loadNextNext} \n`;
     });
     return message;
   } catch (error) {
