@@ -10,7 +10,7 @@ import moment from "moment-timezone";
 
 dotenv.config();
 
-const botToken = process.env.BOT_TOKEN;
+const botToken = process.env.BOT_TOKEN_DEV;
 const bot = new telegram_bot(botToken, { polling: true });
 
 const timezone = "Asia/Singapore";
@@ -23,7 +23,10 @@ setInterval(async () => {
   if (currentHour >= sendStartTime && currentHour <= sendEndTime) {
     let usage = await exportUsage();
     bot
-      .sendMessage(757257986, `usage till ${moment().tz(timezone).format("YYYY-MM-DD")}:\n${usage}`)
+      .sendMessage(
+        757257986,
+        `usage till ${moment().tz(timezone).format("YYYY-MM-DD")}:\n${usage}`
+      )
       .then((sentMessage) => {
         const messageId = sentMessage.message_id;
         bot.pinChatMessage(757257986, messageId);
@@ -45,10 +48,23 @@ bot.on("message", async (msg) => {
         );
         break;
 
+      case msg.location != null:
+        const { latitude, longitude } = msg.location;
+        bot.sendMessage(
+          msg.chat.id,
+          `Your location is: ${latitude}, ${longitude}`
+        );
+        break;
+
       case msg.text === "/savedstops":
-        let [[registeredStops, savedStops]] = await getSavedStopsDetails(chatId);
+        let [[registeredStops, savedStops]] = await getSavedStopsDetails(
+          chatId
+        );
         if (registeredStops == null || savedStops == null) {
-          bot.sendMessage(chatId, "No saved bus stops, try saving a bus stop first!");
+          bot.sendMessage(
+            chatId,
+            "No saved bus stops, try saving a bus stop first!"
+          );
           break;
         }
         registeredStops.forEach((stop) => {
@@ -65,7 +81,10 @@ bot.on("message", async (msg) => {
                 inline_keyboard: [
                   [
                     { text: "Select", callback_data: `${stop.BusStopCode}` },
-                    { text: "Delete", callback_data: `${stop.BusStopCode} delete` },
+                    {
+                      text: "Delete",
+                      callback_data: `${stop.BusStopCode} delete`,
+                    },
                   ],
                 ],
               },
@@ -75,12 +94,18 @@ bot.on("message", async (msg) => {
         });
         if (savedStops.length > 0) {
           savedStops.forEach((stop) => {
-            bot.sendMessage(chatId, `Bus stop: ${stop}\nDescription: Not registered`, {
-              reply_markup: {
-                inline_keyboard: [[{ text: "Select", callback_data: `${stop}` }]],
-              },
-              parse_mode: "Markdown",
-            });
+            bot.sendMessage(
+              chatId,
+              `Bus stop: ${stop}\nDescription: Not registered`,
+              {
+                reply_markup: {
+                  inline_keyboard: [
+                    [{ text: "Select", callback_data: `${stop}` }],
+                  ],
+                },
+                parse_mode: "Markdown",
+              }
+            );
           });
         }
         break;
