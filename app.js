@@ -6,6 +6,7 @@ import { craftMessage } from "./util/messageCraft.js";
 import { getSavedStopsDetails, deleteStop } from "./util/busStop.js";
 import { getBusList, findBusLocation } from "./util/getBusList.js";
 import { trackUsage, exportUsage } from "./util/analytics.js";
+import { getPotentialBusStop } from "./util/getBusStop.js";
 import moment from "moment-timezone";
 
 dotenv.config();
@@ -23,10 +24,7 @@ setInterval(async () => {
   if (currentHour >= sendStartTime && currentHour <= sendEndTime) {
     let usage = await exportUsage();
     bot
-      .sendMessage(
-        757257986,
-        `usage till ${moment().tz(timezone).format("YYYY-MM-DD")}:\n${usage}`
-      )
+      .sendMessage(757257986, `usage till ${moment().tz(timezone).format("YYYY-MM-DD")}:\n${usage}`)
       .then((sentMessage) => {
         const messageId = sentMessage.message_id;
         bot.pinChatMessage(757257986, messageId);
@@ -50,21 +48,38 @@ bot.on("message", async (msg) => {
 
       case msg.location != null:
         const { latitude, longitude } = msg.location;
-        bot.sendMessage(
-          msg.chat.id,
-          `Your location is: ${latitude}, ${longitude}`
-        );
+        const potentialBusStop = await getPotentialBusStop(latitude, longitude);
+        if (potentialBusStop == null) {
+          bot.sendMessage(chatId, "No bus stops found near your location, please try again.");
+          break;
+        }
+
+        potentialBusStop.forEach((stop) => {
+          bot.sendMessage(
+            chatId,
+            `Did you mean this bus stop? \n Bus stop: ${stop.BusStopCode}\nDescription: ${stop.RoadName} near ${stop.Description}`,
+            {
+              reply_markup: {
+                inline_keyboard: [
+                  [
+                    { text: "Select", callback_data: `${stop.BusStopCode}` },
+                    {
+                      text: "Save",
+                      callback_data: `${stop.BusStopCode} save`,
+                    },
+                  ],
+                ],
+              },
+              parse_mode: "Markdown",
+            }
+          );
+        });
         break;
 
       case msg.text === "/savedstops":
-        let [[registeredStops, savedStops]] = await getSavedStopsDetails(
-          chatId
-        );
+        let [[registeredStops, savedStops]] = await getSavedStopsDetails(chatId);
         if (registeredStops == null || savedStops == null) {
-          bot.sendMessage(
-            chatId,
-            "No saved bus stops, try saving a bus stop first!"
-          );
+          bot.sendMessage(chatId, "No saved bus stops, try saving a bus stop first!");
           break;
         }
         registeredStops.forEach((stop) => {
@@ -94,18 +109,12 @@ bot.on("message", async (msg) => {
         });
         if (savedStops.length > 0) {
           savedStops.forEach((stop) => {
-            bot.sendMessage(
-              chatId,
-              `Bus stop: ${stop}\nDescription: Not registered`,
-              {
-                reply_markup: {
-                  inline_keyboard: [
-                    [{ text: "Select", callback_data: `${stop}` }],
-                  ],
-                },
-                parse_mode: "Markdown",
-              }
-            );
+            bot.sendMessage(chatId, `Bus stop: ${stop}\nDescription: Not registered`, {
+              reply_markup: {
+                inline_keyboard: [[{ text: "Select", callback_data: `${stop}` }]],
+              },
+              parse_mode: "Markdown",
+            });
           });
         }
         break;
