@@ -84,7 +84,6 @@ bot.on("message", async (msg) => {
           "Hello from admin!";
         allChatId.forEach((id) => {
           bot.sendMessage(id, adminMessage);
-          bot.sendDocument(id, "./asset/locationGuide.mp4");
         });
         break;
 
@@ -154,7 +153,10 @@ bot.on("message", async (msg) => {
         const busStopCode = msg.text;
         const data = await getBusStop(busStopCode);
         if (data.Services.length === 0) {
-          bot.sendMessage(chatId, "Invalid bus stop entered. Try again");
+          bot.sendMessage(
+            chatId,
+            "It seems like an invalid bus stop or no buses are available anymore!"
+          );
           break;
         }
         const message = craftMessage(data);
