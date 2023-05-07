@@ -1,8 +1,14 @@
 import fs from "fs";
 
-export function trackUsage(username) {
+export function trackUsage(username, chatId) {
   try {
-    const newData = { key: username, value: 1 };
+    const newData = {
+      key: username,
+      value: {
+        chatId: chatId,
+        usage: 1,
+      },
+    };
     fs.open("analytics.json", "r+", (error, fd) => {
       if (error) {
         console.error(error);
@@ -19,7 +25,7 @@ export function trackUsage(username) {
         // Check if the username exists in the array
         allId.id.forEach((item) => {
           if (item[newData.key] !== undefined) {
-            item[newData.key] += 1;
+            item[newData.key].usage += 1;
             usernameExists = true;
           }
         });
@@ -61,9 +67,24 @@ export async function exportUsage() {
     const data = await fs.promises.readFile("analytics.json", "utf8");
     const allId = JSON.parse(data);
     allId.id.forEach((item) => {
-      usage += `${Object.keys(item)[0]}: ${Object.values(item)[0]}\n`;
+      usage += `${Object.keys(item)[0]}: ${Object.values(item)[0].usage}\n`;
     });
     return usage;
+  } catch (error) {
+    console.error(error);
+    return error;
+  }
+}
+
+export async function getAllChatId() {
+  try {
+    const data = await fs.promises.readFile("analytics.json", "utf8");
+    const allId = JSON.parse(data);
+    let chatId = [];
+    allId.id.forEach((item) => {
+      chatId.push(Object.values(item)[0].chatId);
+    });
+    return chatId;
   } catch (error) {
     console.error(error);
     return error;

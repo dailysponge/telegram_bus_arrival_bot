@@ -5,13 +5,14 @@ import { saveStop } from "./util/saveStop.js";
 import { craftMessage } from "./util/messageCraft.js";
 import { getSavedStopsDetails, deleteStop } from "./util/busStop.js";
 import { getBusList, findBusLocation } from "./util/getBusList.js";
-import { trackUsage, exportUsage } from "./util/analytics.js";
+import { trackUsage, exportUsage, getAllChatId } from "./util/analytics.js";
 import { getPotentialBusStop } from "./util/getBusStop.js";
 import moment from "moment-timezone";
 
 dotenv.config();
 
-const botToken = process.env.BOT_TOKEN_DEV;
+const botToken = process.env.BOT_TOKEN;
+const adminId = parseInt(process.env.ADMIN_CHAT_ID);
 const bot = new telegram_bot(botToken, { polling: true });
 
 const timezone = "Asia/Singapore";
@@ -24,10 +25,13 @@ setInterval(async () => {
   if (currentHour >= sendStartTime && currentHour <= sendEndTime) {
     let usage = await exportUsage();
     bot
-      .sendMessage(757257986, `usage till ${moment().tz(timezone).format("YYYY-MM-DD")}:\n${usage}`)
+      .sendMessage(
+        ADMIN_CHAT_ID,
+        `usage till ${moment().tz(timezone).format("YYYY-MM-DD")}:\n${usage}`
+      )
       .then((sentMessage) => {
         const messageId = sentMessage.message_id;
-        bot.pinChatMessage(757257986, messageId);
+        bot.pinChatMessage(adminId, messageId);
       });
   }
 }, 60 * 60 * 1000); // check every hour (in milliseconds)
@@ -39,13 +43,6 @@ bot.on("message", async (msg) => {
   try {
     const chatId = msg.chat.id;
     switch (true) {
-      case msg.text === "/start":
-        bot.sendMessage(
-          chatId,
-          "Welcome! \nType in bus stop number (e.g. 04121) to start!\n\n🟢= LOW crowd\n🟠= MODERATE crowd\n🔴= HIGH crowd.\n'SD' = Single Decker\n'DD' = Double Decker  \n\n Click on the bus number buttons for their location\n\nUse /savedStops or the menu button on the left to show all saved bus stops. "
-        );
-        break;
-
       case msg.location != null:
         const { latitude, longitude } = msg.location;
         const potentialBusStop = await getPotentialBusStop(latitude, longitude);
@@ -57,7 +54,7 @@ bot.on("message", async (msg) => {
         potentialBusStop.forEach((stop) => {
           bot.sendMessage(
             chatId,
-            `Did you mean this bus stop? \n Bus stop: ${stop.BusStopCode}\nDescription: ${stop.RoadName} near ${stop.Description}`,
+            `Did you mean this bus stop? \nBus stop: ${stop.BusStopCode}\nDescription: ${stop.RoadName} near ${stop.Description}`,
             {
               reply_markup: {
                 inline_keyboard: [
@@ -74,6 +71,25 @@ bot.on("message", async (msg) => {
             }
           );
         });
+        break;
+
+      case msg.text.includes("/admin"):
+        if (chatId !== adminId) break;
+        let allChatId = await getAllChatId();
+        let adminMessage =
+          msg.text.split(" ").join(" ").replace("/admin", "") || "Hello from admin!";
+        allChatId.forEach((id) => {
+          bot.sendMessage(id, adminMessage);
+          bot.sendDocument(id, "./asset/locationGuide.mp4");
+        });
+        break;
+
+      case msg.text === "/start":
+        bot.sendMessage(
+          chatId,
+          "Welcome! \nType in bus stop number (e.g. 04121) to start!\n\n🟢= LOW crowd\n🟠= MODERATE crowd\n🔴= HIGH crowd.\n'SD' = Single Decker\n'DD' = Double Decker  \n\n Click on the bus number buttons for their location\n\nUse /savedStops or the menu button on the left to show all saved bus stops.\nAlso, you can select bus stop based on locations via telegram location!"
+        );
+        bot.sendDocument(chatId, "./asset/locationGuide.mp4");
         break;
 
       case msg.text === "/savedstops":
@@ -127,7 +143,7 @@ bot.on("message", async (msg) => {
           break;
         }
         const message = craftMessage(data);
-        trackUsage(msg.chat.username);
+        trackUsage(msg.chat.username, chatId);
         bot.sendMessage(chatId, message, {
           reply_markup: {
             inline_keyboard: [
