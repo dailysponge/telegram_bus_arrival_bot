@@ -26,7 +26,7 @@ setInterval(async () => {
     let usage = await exportUsage();
     bot
       .sendMessage(
-        ADMIN_CHAT_ID,
+        adminId,
         `usage till ${moment().tz(timezone).format("YYYY-MM-DD")}:\n${usage}`
       )
       .then((sentMessage) => {
@@ -47,7 +47,10 @@ bot.on("message", async (msg) => {
         const { latitude, longitude } = msg.location;
         const potentialBusStop = await getPotentialBusStop(latitude, longitude);
         if (potentialBusStop == null) {
-          bot.sendMessage(chatId, "No bus stops found near your location, please try again.");
+          bot.sendMessage(
+            chatId,
+            "No bus stops found near your location, please try again."
+          );
           break;
         }
 
@@ -77,7 +80,8 @@ bot.on("message", async (msg) => {
         if (chatId !== adminId) break;
         let allChatId = await getAllChatId();
         let adminMessage =
-          msg.text.split(" ").join(" ").replace("/admin", "") || "Hello from admin!";
+          msg.text.split(" ").join(" ").replace("/admin", "") ||
+          "Hello from admin!";
         allChatId.forEach((id) => {
           bot.sendMessage(id, adminMessage);
           bot.sendDocument(id, "./asset/locationGuide.mp4");
@@ -93,9 +97,14 @@ bot.on("message", async (msg) => {
         break;
 
       case msg.text === "/savedstops":
-        let [[registeredStops, savedStops]] = await getSavedStopsDetails(chatId);
+        let [[registeredStops, savedStops]] = await getSavedStopsDetails(
+          chatId
+        );
         if (registeredStops == null || savedStops == null) {
-          bot.sendMessage(chatId, "No saved bus stops, try saving a bus stop first!");
+          bot.sendMessage(
+            chatId,
+            "No saved bus stops, try saving a bus stop first!"
+          );
           break;
         }
         registeredStops.forEach((stop) => {
@@ -125,12 +134,18 @@ bot.on("message", async (msg) => {
         });
         if (savedStops.length > 0) {
           savedStops.forEach((stop) => {
-            bot.sendMessage(chatId, `Bus stop: ${stop}\nDescription: Not registered`, {
-              reply_markup: {
-                inline_keyboard: [[{ text: "Select", callback_data: `${stop}` }]],
-              },
-              parse_mode: "Markdown",
-            });
+            bot.sendMessage(
+              chatId,
+              `Bus stop: ${stop}\nDescription: Not registered`,
+              {
+                reply_markup: {
+                  inline_keyboard: [
+                    [{ text: "Select", callback_data: `${stop}` }],
+                  ],
+                },
+                parse_mode: "Markdown",
+              }
+            );
           });
         }
         break;
